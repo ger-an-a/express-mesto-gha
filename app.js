@@ -1,8 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { ERROR_CODE404, ERROR_MESSAGE404 } = require('./utils/constants');
+
 const notFound = (req, res) => {
-  res.status(404).send({ message: 'Страница не найдена' });
+  res.status(ERROR_CODE404).send({ message: ERROR_MESSAGE404 });
 };
 
 const { PORT = 3000 } = process.env;

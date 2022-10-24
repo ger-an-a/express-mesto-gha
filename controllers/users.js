@@ -1,11 +1,12 @@
 const User = require('../models/user');
 const errorSelector = require('../utils/errorSelector');
+const CustomError = require('../utils/CustomError');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then(users => res.send({ data: users }))
     .catch(err => {
-      res.status(errorSelector(err).code).send({ message: `${errorSelector(err).message} при загрузке всех пользователей` })
+      res.status(errorSelector(err.name).code).send({ message: `${errorSelector(err.name).message} при загрузке всех пользователей` })
     });
 };
 
@@ -14,21 +15,22 @@ module.exports.getUser = (req, res) => {
     .then(user => {
       if (user !== null)
         res.send({ data: user })
-      else res.status(404).send({ message: 'Не найден' })
+      else throw new CustomError('NotFound');
     })
     .catch(err => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Некорректный _id' });
-      }
-      else res.status(500).send({ message: 'Произошла ошибка' })
+      if (err.name === 'CastError') throw new CustomError('invalidId');
+      else res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
+    })
+    .catch(err => {
+      res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
     });
 };
 
 module.exports.createUser = (req, res) => {
   User.create(req.body)
-    .then(user => res.status(201).send({ data: user }))
+    .then(user => res.send({ data: user }))
     .catch(err => {
-      res.status(errorSelector(err).code).send({ message: `${errorSelector(err).message} при создании профиля` })
+      res.status(errorSelector(err.name).code).send({ message: `${errorSelector(err.name).message} при создании профиля` })
     });
 };
 
@@ -44,7 +46,7 @@ module.exports.updateUser = (req, res) => {
   )
     .then(user => res.send({ data: user }))
     .catch(err => {
-      res.status(errorSelector(err).code).send({ message: `${errorSelector(err).message} при обновлении профиля` })
+      res.status(errorSelector(err.name).code).send({ message: `${errorSelector(err.name).message} при обновлении профиля` })
     });
 };
 
@@ -60,6 +62,6 @@ module.exports.updateAvatar = (req, res) => {
   )
     .then(user => res.send({ data: user }))
     .catch(err => {
-      res.status(errorSelector(err).code).send({ message: `${errorSelector(err).message} при обновлении аватара` })
+      res.status(errorSelector(err.name).code).send({ message: `${errorSelector(err.name).message} при обновлении аватара` })
     });
 };

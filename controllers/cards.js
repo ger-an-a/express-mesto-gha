@@ -1,11 +1,12 @@
 const Card = require('../models/card');
 const errorSelector = require('../utils/errorSelector');
+const CustomError = require('../utils/CustomError');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
     .then(cards => res.send({ data: cards }))
     .catch(err => {
-      res.status(errorSelector(err).code).send({ message: `${errorSelector(err).message} при загрузке всех карточек` })
+      res.status(errorSelector(err.name).code).send({ message: `${errorSelector(err.name).message} при загрузке всех карточек` });
     });
 };
 
@@ -15,7 +16,7 @@ module.exports.createCard = (req, res) => {
   Card.create({ name, link, owner })
     .then(card => res.send({ data: card }))
     .catch(err => {
-      res.status(errorSelector(err).code).send({ message: 'Ошибка' })
+      res.status(errorSelector(err.name).code).send({ message: `${errorSelector(err.name).message} при создании карточки` });
     });
 };
 
@@ -24,13 +25,14 @@ module.exports.deleteCard = (req, res) => {
     .then(card => {
       if (card !== null)
         res.send({ data: card })
-      else res.status(404).send({ message: 'Не найден' })
+      else throw new CustomError('NotFound');
     })
     .catch(err => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Некорректный _id' });
-      }
-      else res.status(500).send({ message: 'Произошла ошибка' })
+      if (err.name === 'CastError') throw new CustomError('invalidId');
+      else res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
+    })
+    .catch(err => {
+      res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
     });
 };
 
@@ -46,13 +48,14 @@ module.exports.likeCard = (req, res) => {
     .then(card => {
       if (card !== null)
         res.send({ data: card })
-      else res.status(404).send({ message: 'Не найден' })
+      else throw new CustomError('NotFound');
     })
     .catch(err => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Некорректный _id' });
-      }
-      else res.status(500).send({ message: 'Произошла ошибка' })
+      if (err.name === 'CastError') throw new CustomError('invalidId');
+      else res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
+    })
+    .catch(err => {
+      res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
     });
 };
 
@@ -68,13 +71,14 @@ module.exports.dislikeCard = (req, res) => {
     .then(card => {
       if (card !== null)
         res.send({ data: card })
-      else res.status(404).send({ message: 'Не найден' })
+      else throw new CustomError('NotFound');
     })
     .catch(err => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Некорректный _id' });
-      }
-      else res.status(500).send({ message: 'Произошла ошибка' })
+      if (err.name === 'CastError') throw new CustomError('invalidId');
+      else res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
+    })
+    .catch(err => {
+      res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
     });
 };
 

@@ -11,20 +11,26 @@ module.exports.getCards = (req, res) => {
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
-  console.log(req.user._id);
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then(card => res.send({ data: card }))
     .catch(err => {
-      res.status(errorSelector(err).code).send({ message: err })
+      res.status(errorSelector(err).code).send({ message: 'Ошибка' })
     });
 };
 
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .then(card => res.send({ data: card }))
+    .then(card => {
+      if (card !== null)
+        res.send({ data: card })
+      else res.status(404).send({ message: 'Не найден' })
+    })
     .catch(err => {
-      res.status(errorSelector(err).code).send({ message: `${errorSelector(err).message} при удалении карточки` })
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Некорректный _id' });
+      }
+      else res.status(500).send({ message: 'Произошла ошибка' })
     });
 };
 
@@ -32,11 +38,21 @@ module.exports.likeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
-    { new: true },
+    {
+      new: true,
+      runValidators: true
+    },
   )
-    .then(card => res.send({ data: card }))
+    .then(card => {
+      if (card !== null)
+        res.send({ data: card })
+      else res.status(404).send({ message: 'Не найден' })
+    })
     .catch(err => {
-      res.status(errorSelector(err).code).send({ message: `${errorSelector(err).message} при добавлении лайка` })
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Некорректный _id' });
+      }
+      else res.status(500).send({ message: 'Произошла ошибка' })
     });
 };
 
@@ -44,11 +60,21 @@ module.exports.dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
-    { new: true },
+    {
+      new: true,
+      runValidators: true
+    },
   )
-    .then(card => res.send({ data: card }))
+    .then(card => {
+      if (card !== null)
+        res.send({ data: card })
+      else res.status(404).send({ message: 'Не найден' })
+    })
     .catch(err => {
-      res.status(errorSelector(err).code).send({ message: `${errorSelector(err).message} при удалении лайка` })
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Некорректный _id' });
+      }
+      else res.status(500).send({ message: 'Произошла ошибка' })
     });
 };
 

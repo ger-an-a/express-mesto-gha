@@ -11,9 +11,16 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getUser = (req, res) => {
   User.findById(req.params.userId)
-    .then(user => res.send({ data: user }))
+    .then(user => {
+      if (user !== null)
+        res.send({ data: user })
+      else res.status(404).send({ message: 'Не найден' })
+    })
     .catch(err => {
-      res.status(errorSelector(err).code).send({ message: `${errorSelector(err).message} при загрузке профиля` })
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Некорректный _id' });
+      }
+      else res.status(500).send({ message: 'Произошла ошибка' })
     });
 };
 
@@ -30,7 +37,10 @@ module.exports.updateUser = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
-    { new: true }
+    {
+      new: true,
+      runValidators: true
+    }
   )
     .then(user => res.send({ data: user }))
     .catch(err => {
@@ -43,7 +53,10 @@ module.exports.updateAvatar = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar },
-    { new: true }
+    {
+      new: true,
+      runValidators: true
+    }
   )
     .then(user => res.send({ data: user }))
     .catch(err => {

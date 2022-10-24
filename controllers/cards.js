@@ -11,15 +11,17 @@ module.exports.getCards = (req, res) => {
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
-  User.create({ name, link })
+  console.log(req.user._id);
+  const owner = req.user._id;
+  Card.create({ name, link, owner })
     .then(card => res.send({ data: card }))
     .catch(err => {
-      res.status(errorSelector(err).code).send({ message: `${errorSelector(err).message} при создании карточки` })
+      res.status(errorSelector(err).code).send({ message: err })
     });
 };
 
 module.exports.deleteCard = (req, res) => {
-  User.findByIdAndRemove(req.params.cardId)
+  Card.findByIdAndRemove(req.params.cardId)
     .then(card => res.send({ data: card }))
     .catch(err => {
       res.status(errorSelector(err).code).send({ message: `${errorSelector(err).message} при удалении карточки` })

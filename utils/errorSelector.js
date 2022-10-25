@@ -5,11 +5,11 @@ const {
 
 function errorSelector(res, errName, additionMessage = '') {
   if (errName === 'ValidationError' || errName === 'CastError') {
-    res.status(ERROR_CODE400).send({ message: ERROR_MESSAGE400 + additionMessage });
+    res.status(ERROR_CODE400).send({ message: `${ERROR_MESSAGE400} ${additionMessage}` });
   } else if (errName === 'NotFound') {
-    res.status(ERROR_CODE404).send({ message: ERROR_MESSAGE404 + additionMessage });
+    res.status(ERROR_CODE404).send({ message: `${ERROR_MESSAGE404} ${additionMessage}` });
   } else {
-    res.status(ERROR_CODE500).send({ message: ERROR_MESSAGE500 + additionMessage });
+    res.status(ERROR_CODE500).send({ message: `${ERROR_MESSAGE500} ${additionMessage}` });
   }
 }
 

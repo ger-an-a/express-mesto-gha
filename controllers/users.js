@@ -4,33 +4,30 @@ const CustomError = require('../utils/CustomError');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
-    .then(users => res.send({ data: users }))
-    .catch(err => {
-      res.status(errorSelector(err.name).code).send({ message: `${errorSelector(err.name).message} при загрузке всех пользователей` })
+    .then((users) => res.send({ data: users }))
+    .catch((err) => {
+      errorSelector(res, err.name, 'при загрузке всех пользователей');
     });
 };
 
 module.exports.getUser = (req, res) => {
   User.findById(req.params.userId)
-    .then(user => {
-      if (user !== null)
-        res.send({ data: user })
-      else throw new CustomError('NotFound');
+    .then((user) => {
+      if (user !== null) {
+        res.send({ data: user });
+      } else throw new CustomError('NotFound');
     })
-    .catch(err => {
-      if (err.name === 'CastError') throw new CustomError('invalidId');
-      else res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
-    })
-    .catch(err => {
-      res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
+    .catch((err) => {
+      errorSelector(res, err.name, 'при загрузке данных профиля');
     });
 };
 
 module.exports.createUser = (req, res) => {
-  User.create(req.body)
-    .then(user => res.send({ data: user }))
-    .catch(err => {
-      res.status(errorSelector(err.name).code).send({ message: `${errorSelector(err.name).message} при создании профиля` })
+  const { name, about } = req.body;
+  User.create({ name, about })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      errorSelector(res, err.name, 'при создании профиля');
     });
 };
 
@@ -41,12 +38,12 @@ module.exports.updateUser = (req, res) => {
     { name, about },
     {
       new: true,
-      runValidators: true
-    }
+      runValidators: true,
+    },
   )
-    .then(user => res.send({ data: user }))
-    .catch(err => {
-      res.status(errorSelector(err.name).code).send({ message: `${errorSelector(err.name).message} при обновлении профиля` })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      errorSelector(res, err.name, 'при обновлении профиля');
     });
 };
 
@@ -57,11 +54,11 @@ module.exports.updateAvatar = (req, res) => {
     { avatar },
     {
       new: true,
-      runValidators: true
-    }
+      runValidators: true,
+    },
   )
-    .then(user => res.send({ data: user }))
-    .catch(err => {
-      res.status(errorSelector(err.name).code).send({ message: `${errorSelector(err.name).message} при обновлении аватара` })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      errorSelector(res, err.name, 'при обновлении аватара');
     });
 };

@@ -4,9 +4,9 @@ const CustomError = require('../utils/CustomError');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .then(cards => res.send({ data: cards }))
-    .catch(err => {
-      res.status(errorSelector(err.name).code).send({ message: `${errorSelector(err.name).message} при загрузке всех карточек` });
+    .then((cards) => res.send({ data: cards }))
+    .catch((err) => {
+      errorSelector(res, err.name, 'при загрузке карточек');
     });
 };
 
@@ -14,25 +14,21 @@ module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
-    .then(card => res.send({ data: card }))
-    .catch(err => {
-      res.status(errorSelector(err.name).code).send({ message: `${errorSelector(err.name).message} при создании карточки` });
+    .then((card) => res.send({ data: card }))
+    .catch((err) => {
+      errorSelector(res, err.name, 'при создании карточки');
     });
 };
 
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .then(card => {
-      if (card !== null)
-        res.send({ data: card })
-      else throw new CustomError('NotFound');
+    .then((card) => {
+      if (card !== null) {
+        res.send({ data: card });
+      } else throw new CustomError('NotFound');
     })
-    .catch(err => {
-      if (err.name === 'CastError') throw new CustomError('invalidId');
-      else res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
-    })
-    .catch(err => {
-      res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
+    .catch((err) => {
+      errorSelector(res, err.name, 'при удалении карточки');
     });
 };
 
@@ -42,20 +38,16 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     {
       new: true,
-      runValidators: true
+      runValidators: true,
     },
   )
-    .then(card => {
-      if (card !== null)
-        res.send({ data: card })
-      else throw new CustomError('NotFound');
+    .then((card) => {
+      if (card !== null) {
+        res.send({ data: card });
+      } else throw new CustomError('NotFound');
     })
-    .catch(err => {
-      if (err.name === 'CastError') throw new CustomError('invalidId');
-      else res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
-    })
-    .catch(err => {
-      res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
+    .catch((err) => {
+      errorSelector(res, err.name, 'при добавлении лайка');
     });
 };
 
@@ -65,21 +57,15 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     {
       new: true,
-      runValidators: true
+      runValidators: true,
     },
   )
-    .then(card => {
-      if (card !== null)
-        res.send({ data: card })
-      else throw new CustomError('NotFound');
+    .then((card) => {
+      if (card !== null) {
+        res.send({ data: card });
+      } else throw new CustomError('NotFound');
     })
-    .catch(err => {
-      if (err.name === 'CastError') throw new CustomError('invalidId');
-      else res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
-    })
-    .catch(err => {
-      res.status(errorSelector(err.name).code).send({ message: errorSelector(err.name).message })
+    .catch((err) => {
+      errorSelector(res, err.name, 'при удалении лайка');
     });
 };
-
-

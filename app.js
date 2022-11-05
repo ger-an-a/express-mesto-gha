@@ -1,7 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const { ERROR_CODE404, ERROR_MESSAGE404 } = require('./utils/constants');
+const cookieParser = require('cookie-parser');
+const { celebrate, Joi, errors } = require('celebrate');
+
+const { ERROR_CODE404, ERROR_MESSAGE404, regexUrl } = require('./utils/constants');
+const { createUser, login } = require('./controllers/users');
+const { errorSelector } = require('./utils/errorSelector');
+const auth = require('./middlewares/auth');
 
 const notFound = (req, res) => {
   res.status(ERROR_CODE404).send({ message: ERROR_MESSAGE404 });
@@ -11,21 +17,46 @@ const { PORT = 3000 } = process.env;
 
 const app = express();
 
+app.use(cookieParser());
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {});
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '63546d747227ae89547d9b04',
-  };
-  next();
-});
-app.use('/users', require('./routes/users'));
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().min(2).max(30).pattern(new RegExp(regexUrl)),
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(6),
+  }),
+}), createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(6),
+  }),
+}), login);
+
+app.use(auth);
+
+app.use('/users', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().min(2).max(30).pattern(new RegExp(regexUrl)),
+  }),
+}), require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
 app.use(notFound);
+
+app.use(errors());
+app.use((err, req, res) => {
+  errorSelector(res, err.name);
+});
 
 app.listen(PORT, () => {
   console.log(`App listening on port  ${PORT}`);

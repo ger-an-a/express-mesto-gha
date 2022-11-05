@@ -1,40 +1,40 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const errorSelector = require('../utils/errorSelector');
 const CustomError = require('../utils/CustomError');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => {
-      errorSelector(res, err.name, 'при загрузке всех пользователей');
-    });
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
-  User.findById(req.params.userId)
+module.exports.getUser = (req, res, next) => {
+  User.findById(req.cookies.jwt._id)
     .then((user) => {
       if (user !== null) {
         res.send({ data: user });
       } else throw new CustomError('NotFound');
     })
-    .catch((err) => {
-      errorSelector(res, err.name, 'при загрузке данных профиля');
-    });
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+module.exports.createUser = (req, res, next) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      errorSelector(res, err.name, 'при создании профиля');
-    });
+    .catch(next);
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
-    req.user._id,
+    req.cookies.jwt._id,
     { name, about },
     {
       new: true,
@@ -42,15 +42,13 @@ module.exports.updateUser = (req, res) => {
     },
   )
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      errorSelector(res, err.name, 'при обновлении профиля');
-    });
+    .catch(next);
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
-    req.user._id,
+    req.cookies.jwt._id,
     { avatar },
     {
       new: true,
@@ -58,7 +56,27 @@ module.exports.updateAvatar = (req, res) => {
     },
   )
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      errorSelector(res, err.name, 'при обновлении аватара');
+    .catch(next);
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        'some-secret-key',
+        { expiresIn: '7d' },
+      );
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: true,
+        })
+        .end();
+    })
+    .catch(() => {
+      next(new CustomError('LoginError'));
     });
 };

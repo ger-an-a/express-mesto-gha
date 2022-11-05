@@ -1,41 +1,34 @@
 const Card = require('../models/card');
-const errorSelector = require('../utils/errorSelector');
 const CustomError = require('../utils/CustomError');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch((err) => {
-      errorSelector(res, err.name, 'при загрузке карточек');
-    });
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
-  const owner = req.user._id;
+  const owner = req.cookies.jwt._id;
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      errorSelector(res, err.name, 'при создании карточки');
-    });
+    .catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+module.exports.deleteCard = (req, res, next) => {
+  Card.findOneAndRemove({ _id: req.params.cardId, owner: req.cookies.jwt._id })
     .then((card) => {
       if (card !== null) {
         res.send({ data: card });
       } else throw new CustomError('NotFound');
     })
-    .catch((err) => {
-      errorSelector(res, err.name, 'при удалении карточки');
-    });
+    .catch(next);
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
+    { $addToSet: { likes: req.cookies.jwt._id } },
     {
       new: true,
       runValidators: true,
@@ -46,15 +39,13 @@ module.exports.likeCard = (req, res) => {
         res.send({ data: card });
       } else throw new CustomError('NotFound');
     })
-    .catch((err) => {
-      errorSelector(res, err.name, 'при добавлении лайка');
-    });
+    .catch(next);
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: req.user._id } },
+    { $pull: { likes: req.cookies.jwt._id } },
     {
       new: true,
       runValidators: true,
@@ -65,7 +56,5 @@ module.exports.dislikeCard = (req, res) => {
         res.send({ data: card });
       } else throw new CustomError('NotFound');
     })
-    .catch((err) => {
-      errorSelector(res, err.name, 'при удалении лайка');
-    });
+    .catch(next);
 };

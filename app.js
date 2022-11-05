@@ -31,13 +31,13 @@ app.post('/signup', celebrate({
     avatar: Joi.string().min(2).max(30).pattern(new RegExp(regexUrl)),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(6),
-  }),
+  }).unknown(true),
 }), createUser);
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(6),
-  }),
+  }).unknown(true),
 }), login);
 
 app.use(auth);
@@ -47,14 +47,14 @@ app.use('/users', celebrate({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().min(2).max(30).pattern(new RegExp(regexUrl)),
-  }),
+  }).unknown(true),
 }), require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
 app.use(notFound);
 
 app.use(errors());
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   errorSelector(res, err.name);
 });
 

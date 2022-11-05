@@ -9,14 +9,14 @@ module.exports.getCards = (req, res, next) => {
 
 module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
-  const owner = req.cookies.jwt._id;
+  const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
     .catch(next);
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findOneAndRemove({ _id: req.params.cardId, owner: req.cookies.jwt._id })
+  Card.findOneAndRemove({ _id: req.params.cardId, owner: req.user._id })
     .then((card) => {
       if (card !== null) {
         res.send({ data: card });
@@ -28,7 +28,7 @@ module.exports.deleteCard = (req, res, next) => {
 module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: req.cookies.jwt._id } },
+    { $addToSet: { likes: req.user._id } },
     {
       new: true,
       runValidators: true,
@@ -45,7 +45,7 @@ module.exports.likeCard = (req, res, next) => {
 module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: req.cookies.jwt._id } },
+    { $pull: { likes: req.user._id } },
     {
       new: true,
       runValidators: true,

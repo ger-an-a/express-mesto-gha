@@ -10,7 +10,7 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
-  User.findById(req.cookies.jwt._id)
+  User.findById(req.user._id)
     .then((user) => {
       if (user !== null) {
         res.send({ data: user });
@@ -34,7 +34,7 @@ module.exports.createUser = (req, res, next) => {
 module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
-    req.cookies.jwt._id,
+    req.user._id,
     { name, about },
     {
       new: true,
@@ -48,7 +48,7 @@ module.exports.updateUser = (req, res, next) => {
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
-    req.cookies.jwt._id,
+    req.user._id,
     { avatar },
     {
       new: true,

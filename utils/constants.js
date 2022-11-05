@@ -6,4 +6,4 @@ module.exports.ERROR_MESSAGE400 = 'Переданы некорректные д�
 module.exports.ERROR_MESSAGE401 = 'Ошибка авторизации';
 module.exports.ERROR_MESSAGE404 = 'Не найден запрашиваемый элемент';
 module.exports.ERROR_MESSAGE500 = 'Произошла ошибка';
-module.exports.regexUrl = /https?:\/\/(www\.)?[a-z\d-]{2,63}\.[a-z.]{2,6}(\/[\w\-.~:?#\][@!$&'()*+,;=/])*/;
+module.exports.regexUrl = /https?:\/\/(www\.)?[.a-z\d-]{2,63}\.[a-z.]{2,6}(\/[\w\-.~:?#\][@!$&'()*+,;=/])*/;

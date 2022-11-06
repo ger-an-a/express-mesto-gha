@@ -45,7 +45,7 @@ app.use(auth);
 
 app.use('/users', celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().alphanum().length(24),
+    userId: Joi.string().hex().length(24),
   }).unknown(true),
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
@@ -56,7 +56,7 @@ app.use('/users', celebrate({
 
 app.use('/cards', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
+    cardId: Joi.string().hex().length(24),
   }).unknown(true),
 }), require('./routes/cards'));
 

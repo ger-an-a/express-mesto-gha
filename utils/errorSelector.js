@@ -1,6 +1,7 @@
 const {
-  ERROR_CODE400, ERROR_CODE401, ERROR_CODE404, ERROR_CODE409, ERROR_CODE500,
-  ERROR_MESSAGE400, ERROR_MESSAGE401, ERROR_MESSAGE404, ERROR_MESSAGE409, ERROR_MESSAGE500,
+  ERROR_CODE400, ERROR_CODE401, ERROR_CODE403, ERROR_CODE404, ERROR_CODE409, ERROR_CODE500,
+  ERROR_MESSAGE400, ERROR_MESSAGE401, ERROR_MESSAGE403, ERROR_MESSAGE404, ERROR_MESSAGE409,
+  ERROR_MESSAGE500,
 } = require('./constants');
 
 module.exports.errorSelector = (res, err) => {
@@ -10,6 +11,8 @@ module.exports.errorSelector = (res, err) => {
     res.status(ERROR_CODE400).send({ message: ERROR_MESSAGE400 });
   } else if (err.name === 'LoginError') {
     res.status(ERROR_CODE401).send({ message: ERROR_MESSAGE401 });
+  } else if (err.name === 'noAccess') {
+    res.status(ERROR_CODE403).send({ message: ERROR_MESSAGE403 });
   } else if (err.name === 'NotFound') {
     res.status(ERROR_CODE404).send({ message: ERROR_MESSAGE404 });
   } else {

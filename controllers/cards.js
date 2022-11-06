@@ -22,7 +22,7 @@ module.exports.deleteCard = (req, res, next) => {
         res.send({ data: card });
       } else throw new CustomError('NotFound');
     })
-    .catch(next);
+    .catch(next(new CustomError('noAccess')));
 };
 
 module.exports.likeCard = (req, res, next) => {

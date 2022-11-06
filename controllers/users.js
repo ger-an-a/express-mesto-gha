@@ -10,6 +10,16 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
+  User.findById(req.params.userId)
+    .then((user) => {
+      if (user !== null) {
+        res.send({ data: user });
+      } else throw new CustomError('NotFound');
+    })
+    .catch(next);
+};
+
+module.exports.getMyInfo = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (user !== null) {

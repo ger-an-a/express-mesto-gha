@@ -44,22 +44,9 @@ app.post('/signin', celebrate({
 
 app.use(auth);
 
-app.use('/users', celebrate({
-  params: Joi.object().keys({
-    userId: Joi.objectId(),
-  }).unknown(true),
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().min(2).max(30).pattern(new RegExp(regexUrl)),
-  }).unknown(true),
-}), require('./routes/users'));
+app.use('/users', require('./routes/users'));
 
-app.use('/cards', celebrate({
-  params: Joi.object().keys({
-    cardId: Joi.objectId(),
-  }).unknown(true),
-}), require('./routes/cards'));
+app.use('/cards', require('./routes/cards'));
 
 app.use(notFound);
 

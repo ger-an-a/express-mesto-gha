@@ -27,6 +27,7 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
+    .then((user) => User.findById(user._id))
     .then((user) => res.send({ data: user }))
     .catch(next);
 };
@@ -74,7 +75,7 @@ module.exports.login = (req, res, next) => {
           httpOnly: true,
           sameSite: true,
         })
-        .end();
+        .send({ data: user });
     })
     .catch(() => {
       next(new CustomError('LoginError'));

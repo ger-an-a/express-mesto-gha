@@ -55,7 +55,7 @@ app.use(notFound);
 
 app.use(errors());
 app.use((err, req, res, next) => {
-  errorSelector(res, err.name);
+  errorSelector(res, err);
   next();
 });
 

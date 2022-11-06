@@ -1,11 +1,11 @@
-const mongoose = require('mongoose');
+const { mongoose, Schema } = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const isEmail = require('validator/lib/isEmail');
 const CustomError = require('../utils/CustomError');
 const { regexUrl } = require('../utils/constants');
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
   name: {
     type: String,
     default: 'Жак-Ив Кусто',

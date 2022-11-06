@@ -16,13 +16,16 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findOneAndRemove({ _id: req.params.cardId, owner: req.user._id })
+  Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (card !== null) {
-        res.send({ data: card });
+        if (card.owner.toString() !== req.user._id) {
+          throw new CustomError('noAccess');
+        }
+        res.status(200).send({ data: card });
       } else throw new CustomError('NotFound');
     })
-    .catch(next(new CustomError('noAccess')));
+    .catch(next);
 };
 
 module.exports.likeCard = (req, res, next) => {

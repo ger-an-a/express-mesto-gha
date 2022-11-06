@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { celebrate, Joi, errors } = require('celebrate');
+Joi.objectId = require('joi-objectid')(Joi);
 
 const { ERROR_CODE404, ERROR_MESSAGE404, regexUrl } = require('./utils/constants');
 const { createUser, login } = require('./controllers/users');
@@ -45,7 +46,7 @@ app.use(auth);
 
 app.use('/users', celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().hex().length(24),
+    userId: Joi.objectId(),
   }).unknown(true),
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
@@ -56,7 +57,7 @@ app.use('/users', celebrate({
 
 app.use('/cards', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().hex().length(24),
+    cardId: Joi.objectId(),
   }).unknown(true),
 }), require('./routes/cards'));
 

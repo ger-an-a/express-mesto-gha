@@ -5,13 +5,13 @@ const cookieParser = require('cookie-parser');
 const { celebrate, Joi, errors } = require('celebrate');
 Joi.objectId = require('joi-objectid')(Joi);
 
-const { ERROR_CODE404, ERROR_MESSAGE404, regexUrl } = require('./utils/constants');
+const { regexUrl } = require('./utils/constants');
 const { createUser, login } = require('./controllers/users');
-const { errorSelector } = require('./utils/errorSelector');
 const auth = require('./middlewares/auth');
+const NotFoundError = require('./errors/NotFoundError');
 
-const notFound = (req, res) => {
-  res.status(ERROR_CODE404).send({ message: ERROR_MESSAGE404 });
+const notFound = () => {
+  throw new NotFoundError();
 };
 
 const { PORT = 3000 } = process.env;
@@ -29,17 +29,17 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().min(2).max(30).pattern(new RegExp(regexUrl)),
+    avatar: Joi.string().pattern(new RegExp(regexUrl)),
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(6),
-  }).unknown(true),
+    password: Joi.string().required(),
+  }),
 }), createUser);
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(6),
-  }).unknown(true),
+    password: Joi.string().required(),
+  }),
 }), login);
 
 app.use(auth);
@@ -52,7 +52,7 @@ app.use(notFound);
 
 app.use(errors());
 app.use((err, req, res, next) => {
-  errorSelector(res, err);
+  res.status(err.statusCode).send({ message: err.message });
   next();
 });
 

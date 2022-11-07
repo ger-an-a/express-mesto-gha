@@ -2,7 +2,7 @@ const { mongoose, Schema } = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const isEmail = require('validator/lib/isEmail');
-const CustomError = require('../utils/CustomError');
+const LoginError = require('../errors/LoginError');
 const { regexUrl } = require('../utils/constants');
 
 const userSchema = new Schema({
@@ -40,18 +40,23 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true,
-    minlength: 6,
     select: false,
   },
 });
 
+userSchema.methods.toJSON = function () {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
+
 userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) throw new CustomError('LoginError');
+      if (!user) throw new LoginError();
       return bcrypt.compare(password, user.password)
         .then((matched) => {
-          if (!matched) throw new CustomError('LoginError');
+          if (!matched) throw new LoginError();
           return user;
         });
     });

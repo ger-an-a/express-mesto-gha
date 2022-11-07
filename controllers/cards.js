@@ -1,10 +1,14 @@
 const Card = require('../models/card');
-const CustomError = require('../utils/CustomError');
+const errorSelector = require('../utils/errorSelector');
+const AccessError = require('../errors/AccessError');
+const NotFoundError = require('../errors/NotFoundError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch(next);
+    .catch((err) => {
+      next(errorSelector(err));
+    });
 };
 
 module.exports.createCard = (req, res, next) => {
@@ -12,20 +16,24 @@ module.exports.createCard = (req, res, next) => {
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
-    .catch(next);
+    .catch((err) => {
+      next(errorSelector(err));
+    });
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .then((card) => {
       if (card !== null) {
         if (card.owner.toString() !== req.user._id) {
-          throw new CustomError('noAccess');
+          throw new AccessError();
         }
-        res.status(200).send({ data: card });
-      } else throw new CustomError('NotFound');
+        card.remove();
+      } else throw new NotFoundError();
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorSelector(err));
+    });
 };
 
 module.exports.likeCard = (req, res, next) => {
@@ -40,9 +48,11 @@ module.exports.likeCard = (req, res, next) => {
     .then((card) => {
       if (card !== null) {
         res.send({ data: card });
-      } else throw new CustomError('NotFound');
+      } else throw new NotFoundError();
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorSelector(err));
+    });
 };
 
 module.exports.dislikeCard = (req, res, next) => {
@@ -57,7 +67,9 @@ module.exports.dislikeCard = (req, res, next) => {
     .then((card) => {
       if (card !== null) {
         res.send({ data: card });
-      } else throw new CustomError('NotFound');
+      } else throw new NotFoundError();
     })
-    .catch(next);
+    .catch((err) => {
+      next(errorSelector(err));
+    });
 };

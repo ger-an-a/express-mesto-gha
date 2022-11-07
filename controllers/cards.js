@@ -1,14 +1,11 @@
 const Card = require('../models/card');
-const errorSelector = require('../utils/errorSelector');
 const AccessError = require('../errors/AccessError');
 const NotFoundError = require('../errors/NotFoundError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch((err) => {
-      next(errorSelector(err));
-    });
+    .catch(next);
 };
 
 module.exports.createCard = (req, res, next) => {
@@ -16,9 +13,7 @@ module.exports.createCard = (req, res, next) => {
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      next(errorSelector(err));
-    });
+    .catch(next);
 };
 
 module.exports.deleteCard = (req, res, next) => {
@@ -31,9 +26,7 @@ module.exports.deleteCard = (req, res, next) => {
         card.remove();
       } else throw new NotFoundError();
     })
-    .catch((err) => {
-      next(errorSelector(err));
-    });
+    .catch(next);
 };
 
 module.exports.likeCard = (req, res, next) => {
@@ -50,9 +43,7 @@ module.exports.likeCard = (req, res, next) => {
         res.send({ data: card });
       } else throw new NotFoundError();
     })
-    .catch((err) => {
-      next(errorSelector(err));
-    });
+    .catch(next);
 };
 
 module.exports.dislikeCard = (req, res, next) => {
@@ -69,7 +60,5 @@ module.exports.dislikeCard = (req, res, next) => {
         res.send({ data: card });
       } else throw new NotFoundError();
     })
-    .catch((err) => {
-      next(errorSelector(err));
-    });
+    .catch(next);
 };

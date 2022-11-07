@@ -1,16 +1,14 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const errorSelector = require('../utils/errorSelector');
 const LoginError = require('../errors/LoginError');
 const NotFoundError = require('../errors/NotFoundError');
+const RegisterError = require('../errors/RegisterError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => {
-      next(errorSelector(err));
-    });
+    .catch(next);
 };
 
 module.exports.getUser = (req, res, next) => {
@@ -20,9 +18,7 @@ module.exports.getUser = (req, res, next) => {
         res.send({ data: user });
       } else throw new NotFoundError();
     })
-    .catch((err) => {
-      next(errorSelector(err));
-    });
+    .catch(next);
 };
 
 module.exports.getMyInfo = (req, res, next) => {
@@ -32,9 +28,7 @@ module.exports.getMyInfo = (req, res, next) => {
         res.send({ data: user });
       } else throw new NotFoundError();
     })
-    .catch((err) => {
-      next(errorSelector(err));
-    });
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -47,7 +41,9 @@ module.exports.createUser = (req, res, next) => {
     }))
     .then((user) => res.send({ data: user.toJSON() }))
     .catch((err) => {
-      next(errorSelector(err));
+      if (err.code === 11000) {
+        next(new RegisterError());
+      } else next(err);
     });
 };
 
@@ -62,9 +58,7 @@ module.exports.updateUser = (req, res, next) => {
     },
   )
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      next(errorSelector(err));
-    });
+    .catch(next);
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -78,9 +72,7 @@ module.exports.updateAvatar = (req, res, next) => {
     },
   )
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      next(errorSelector(err));
-    });
+    .catch(next);
 };
 
 module.exports.login = (req, res, next) => {

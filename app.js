@@ -9,6 +9,7 @@ const { regexUrl } = require('./utils/constants');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/NotFoundError');
+const { ERROR_CODE500, ERROR_MESSAGE500 } = require('./utils/constants');
 
 const notFound = () => {
   throw new NotFoundError();
@@ -52,7 +53,9 @@ app.use(notFound);
 
 app.use(errors());
 app.use((err, req, res, next) => {
-  res.status(err.statusCode).send({ message: err.message });
+  const statusCode = err.statusCode || ERROR_CODE500;
+  const message = statusCode === ERROR_CODE500 ? ERROR_MESSAGE500 : err.message;
+  res.status(statusCode).send({ message });
   next();
 });
 

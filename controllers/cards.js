@@ -20,10 +20,12 @@ module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then((card) => {
       if (card !== null) {
+        console.log(card);
         if (card.owner.toString() !== req.user._id) {
           throw new AccessError();
         }
         card.remove();
+        res.send({ message: 'Карточка удалена' });
       } else throw new NotFoundError();
     })
     .catch(next);

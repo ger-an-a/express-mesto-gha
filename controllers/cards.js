@@ -1,6 +1,7 @@
 const Card = require('../models/card');
 const AccessError = require('../errors/AccessError');
 const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
@@ -13,20 +14,27 @@ module.exports.createCard = (req, res, next) => {
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError());
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then((card) => {
-      if (card !== null) {
-        console.log(card);
+      if (!card) {
+        throw new NotFoundError();
+      } else {
         if (card.owner.toString() !== req.user._id) {
           throw new AccessError();
         }
-        card.remove();
-        res.send({ message: 'Карточка удалена' });
-      } else throw new NotFoundError();
+        return card.remove()
+          .then(() => res.send({ message: 'Карточка удалена' }));
+      }
     })
     .catch(next);
 };

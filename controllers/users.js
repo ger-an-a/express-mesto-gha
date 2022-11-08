@@ -4,6 +4,7 @@ const User = require('../models/user');
 const LoginError = require('../errors/LoginError');
 const NotFoundError = require('../errors/NotFoundError');
 const RegisterError = require('../errors/RegisterError');
+const BadRequestError = require('../errors/BadRequestError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -24,7 +25,7 @@ module.exports.getUser = (req, res, next) => {
 module.exports.getMyInfo = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
-      if (user !== null) {
+      if (user) {
         res.send({ data: user });
       } else throw new NotFoundError();
     })
@@ -43,7 +44,11 @@ module.exports.createUser = (req, res, next) => {
     .catch((err) => {
       if (err.code === 11000) {
         next(new RegisterError());
-      } else next(err);
+      } else if (err.name === 'ValidationError') {
+        next(new BadRequestError());
+      } else {
+        next(err);
+      }
     });
 };
 
@@ -58,7 +63,13 @@ module.exports.updateUser = (req, res, next) => {
     },
   )
     .then((user) => res.send({ data: user }))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError());
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -72,7 +83,13 @@ module.exports.updateAvatar = (req, res, next) => {
     },
   )
     .then((user) => res.send({ data: user }))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError());
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.login = (req, res, next) => {
